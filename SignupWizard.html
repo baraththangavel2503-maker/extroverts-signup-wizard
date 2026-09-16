@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Extroverts — Life happens out there.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     TOKENS — sampled from the real app: near-pure black surfaces,
+     thin low-opacity white borders, white pill / bordered-pill
+     button pairs, all-caps gray section labels, sparing color use.
+     ============================================================ */
+  :root{
+    --bg:#000000;
+    --bg-raised:#0B0B0B;
+    --bg-input:#0E0E0E;
+    --border:rgba(255,255,255,0.16);
+    --border-strong:rgba(255,255,255,0.32);
+    --text:#FFFFFF;
+    --text-dim:#9A9A9A;
+    --text-faint:#6B6B6B;
+    --bronze:#D98F4E;
+    --gold:#E8B84B;
+    --coral:#E8756B;
+    --sky:#5AA9E6;
+    --mustard:#D9A441;
+    --danger:#FF6B6B;
+    --success:#3ECF8E;
+    --dash-orange:#FF9F45;
+    --dash-blue:#4C8DFF;
+    --radius-s:10px;
+    --radius-m:16px;
+    --radius-l:26px;
+    --radius-pill:999px;
+    --ease: cubic-bezier(.22,.9,.32,1);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    font-family:'Poppins', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,p{ margin:0; }
+  button{ font-family:inherit; }
+  input,select,textarea{ font-family:inherit; }
+  a{ color:inherit; }
+  ::selection{ background:var(--gold); color:#000; }
+
+  :focus-visible{
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  .visually-hidden{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+  /* ============================================================
+     SHELLS
+     ============================================================ */
+  #app{ min-height:100vh; display:flex; flex-direction:column; }
+  .view{ display:none; }
+  .view.is-active{ display:block; animation: viewIn .38s var(--ease); }
+  @keyframes viewIn{ from{ opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .shell{ width:100%; max-width:1080px; margin:0 auto; padding:0 24px; }
+
+  .eyebrow{
+    font-size:0.74rem; font-weight:700; letter-spacing:0.11em; text-transform:uppercase;
+    color:var(--text-dim);
+  }
+
+  /* ---------- logo ---------- */
+  .logo-mark{
+    font-family:'Playfair Display', serif;
+    font-weight:800;
+    display:inline-flex; align-items:flex-start; line-height:1;
+    color:var(--text);
+  }
+  .logo-mark .dot{
+    width:0.16em; height:0.16em; border-radius:50%; background:currentColor;
+    margin-left:0.03em; margin-top:0.02em;
+  }
+
+  /* ---------- top nav ---------- */
+  .topnav{
+    position:sticky; top:0; z-index:40;
+    background:rgba(0,0,0,0.78);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topnav .shell{ display:flex; align-items:center; justify-content:space-between; height:70px; max-width:1080px; }
+  .brand{ background:none; border:0; padding:0; cursor:pointer; font-size:1.5rem; }
+  .brand .logo-mark{ font-size:1.5rem; }
+  .nav-actions{ display:flex; gap:10px; align-items:center; }
+
+  /* ---------- buttons — white pill primary / bordered pill secondary ---------- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border-radius: var(--radius-pill);
+    padding: 14px 26px;
+    font-weight:700;
+    font-size:0.94rem;
+    border:1.5px solid transparent;
+    cursor:pointer;
+    transition: transform .15s var(--ease), opacity .15s var(--ease), background .15s var(--ease), border-color .15s var(--ease);
+    white-space:nowrap;
+  }
+  .btn:active{ transform: scale(0.97); }
+  .btn-primary{ background:#FFFFFF; color:#000000; }
+  .btn-primary:hover{ background:#EDEDED; }
+  .btn-primary:disabled{ opacity:.35; cursor:not-allowed; }
+  .btn-secondary{ background:#000000; color:#FFFFFF; border-color:var(--border-strong); }
+  .btn-secondary:hover{ border-color:#fff; }
+  .btn-ghost{ background:transparent; color:var(--text); border-color:var(--border); }
+  .btn-ghost:hover{ border-color:var(--border-strong); }
+  .btn-block{ width:100%; }
+  .btn-sm{ padding:10px 18px; font-size:0.85rem; }
+
+  .btn[data-loading="true"] .btn-label{ visibility:hidden; }
+  .btn[data-loading="true"]{ position:relative; }
+  .spinner{
+    display:none; position:absolute; width:18px; height:18px; border-radius:50%;
+    border:2.5px solid rgba(0,0,0,0.25); border-top-color:#000;
+    animation: spin .7s linear infinite;
+  }
+  .btn-secondary .spinner, .btn-ghost .spinner{ border-color: rgba(255,255,255,0.25); border-top-color:#fff; }
+  .btn[data-loading="true"] .spinner{ display:block; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .btn-text{ background:none; border:0; padding:6px 2px; color:var(--text-dim); font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer; font-size:0.9rem; }
+  .btn-text:hover{ color:var(--text); }
+  .btn-back{ display:inline-flex; align-items:center; gap:6px; background:none; border:0; cursor:pointer; color:var(--text-dim); font-weight:600; font-size:0.9rem; padding:8px 0; }
+  .btn-back:hover{ color:var(--text); }
+
+  .stacked-actions{ display:flex; flex-direction:column; gap:12px; margin-top:30px; }
+
+  /* ============================================================
+     LANDING — mesh-gradient splash hero, matching the app's
+     onboarding screen almost verbatim
+     ============================================================ */
+  .hero{
+    position:relative;
+    min-height:88vh;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    text-align:center;
+    padding: 70px 24px 60px;
+    overflow:hidden;
+    isolation:isolate;
+  }
+  .hero-mesh{
+    position:absolute; inset:0; z-index:-2;
+    background:
+      radial-gradient(circle at 12% 20%, #FFC93C 0%, transparent 32%),
+      radial-gradient(circle at 30% 10%, #FF5A4E 0%, transparent 38%),
+      radial-gradient(circle at 55% 28%, #E63E6D 0%, transparent 40%),
+      radial-gradient(circle at 75% 15%, #6C5CE7 0%, transparent 40%),
+      radial-gradient(circle at 92% 35%, #33D0C8 0%, transparent 38%),
+      #000000;
+    filter: blur(38px) saturate(1.15);
+    opacity:0.85;
+  }
+  .hero-mountain{
+    position:absolute; left:-5%; right:-5%; bottom:-6%; height:46%; z-index:-1;
+    background:#000;
+    clip-path: polygon(0% 100%, 0% 55%, 14% 38%, 30% 48%, 46% 20%, 58% 42%, 74% 30%, 88% 50%, 100% 40%, 100% 100%);
+    filter: blur(1px);
+  }
+  .hero-mark{ font-size:3.2rem; margin-bottom:26px; }
+  .hero-tagline{ font-size:1rem; font-weight:500; color:rgba(255,255,255,0.88); margin-bottom:6px; }
+  .hero-wordmark{
+    font-size:clamp(2.4rem, 8vw, 4rem); font-weight:800; letter-spacing:0.01em;
+    margin-bottom:18px;
+  }
+  .hero-sub{ max-width:44ch; color:rgba(255,255,255,0.78); font-size:1rem; line-height:1.6; margin-bottom:34px; }
+  .hero-ctas{ display:flex; flex-direction:column; gap:12px; width:100%; max-width:360px; }
+  .hero-ctas .btn{ padding:16px 26px; }
+  .hero-legal{ margin-top:22px; font-size:0.8rem; color:var(--text-faint); max-width:320px; line-height:1.6; }
+  .hero-legal button{ background:none; border:0; padding:0; color:var(--text-dim); text-decoration:underline; cursor:pointer; font-size:inherit; font-weight:600; }
+  .hero-legal button:hover{ color:#fff; }
+
+  /* ---------- generic section shell ---------- */
+  .section{ padding:64px 0; border-top:1px solid var(--border); }
+  .section .eyebrow{ margin-bottom:14px; }
+  .section h2{ font-size:clamp(1.5rem,3vw,1.9rem); font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; }
+  .section p.desc{ color:var(--text-dim); font-size:0.96rem; max-width:56ch; line-height:1.6; margin-bottom:30px; }
+
+  /* ---------- club card ---------- */
+  .club-card{
+    border:1px solid var(--border); border-radius:var(--radius-m);
+    padding:18px 20px; display:flex; align-items:center; justify-content:space-between;
+    max-width:440px;
+  }
+  .club-card strong{ font-size:1.02rem; font-weight:700; }
+  .hex{
+    width:34px; height:34px; flex:none;
+    background: linear-gradient(135deg, var(--bronze), #A85A22);
+    clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
+  }
+  .club-tokens{ margin-top:14px; display:flex; align-items:center; gap:8px; font-weight:700; font-size:0.92rem; color:#fff; }
+
+  /* ---------- memories strip ---------- */
+  .memory-strip{ display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; }
+  .memory-card{
+    position:relative; flex:none; width:150px; height:190px; border-radius:var(--radius-m);
+    overflow:hidden; background: linear-gradient(160deg, var(--m1,#E63E6D), var(--m2,#6C5CE7));
+  }
+  .memory-card::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.75) 100%); }
+  .memory-card .time-badge{
+    position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.55); color:#fff;
+    font-size:0.7rem; font-weight:700; padding:4px 8px; border-radius:999px; z-index:2;
+  }
+  .memory-card .cap{ position:absolute; left:10px; bottom:10px; z-index:2; font-weight:700; font-size:0.85rem; }
+
+  /* ---------- party / event card (reused on success screen too) ---------- */
+  .party-card{ border:1px solid var(--border); border-radius:var(--radius-m); overflow:hidden; max-width:440px; }
+  .party-banner{ height:170px; background: linear-gradient(120deg, #E63E6D, #6C5CE7 55%, #33A9E6); }
+  .party-body{ padding:20px; }
+  .party-title-row{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .party-title-row h3{ font-size:1.2rem; font-weight:800; }
+  .party-meta-label{ font-size:0.72rem; font-weight:700; letter-spacing:0.08em; color:var(--text-dim); text-transform:uppercase; margin:6px 0 10px; }
+  .chip-tag{
+    display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 12px; font-size:0.8rem; font-weight:700; color:#1A1108;
+  }
+  .party-host{ display:flex; align-items:center; gap:8px; margin-top:12px; font-weight:700; font-size:0.9rem; }
+  .avatar-circle{
+    width:26px; height:26px; border-radius:50%; flex:none;
+    display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:800; color:#000;
+    background: linear-gradient(135deg, var(--gold), var(--coral));
+  }
+  .party-info-row{ display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--border); border-radius:var(--radius-s); margin-top:16px; overflow:hidden; }
+  .party-info-row .cell{ padding:12px 14px; display:flex; align-items:center; justify-content:space-between; font-weight:700; font-size:0.9rem; }
+  .party-info-row .cell + .cell{ border-left:1px solid var(--border); }
+  .party-loc-row{ border:1px solid var(--border); border-top:0; border-radius:0 0 var(--radius-s) var(--radius-s); padding:12px 14px; margin-top:-1px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:0.86rem; color:var(--text-dim); }
+  .party-loc-row span:first-child{ line-height:1.45; }
+  .view-flyer-btn{ width:100%; margin-top:16px; background:#fff; color:#000; border:0; border-radius:var(--radius-s); padding:13px; font-weight:800; cursor:pointer; }
+  .spots-banner{ text-align:center; font-weight:700; font-size:0.88rem; padding:10px; color:#fff; }
+
+  /* ---------- dashed promo card (Host / VIP style) ---------- */
+  .dashed-card{
+    border:1.5px dashed var(--dash-orange); border-radius:var(--radius-m); padding:22px 24px;
+    max-width:520px;
+  }
+  .dashed-card.blue{ border-color:var(--dash-blue); }
+  .dashed-card h3{ font-size:1.1rem; font-weight:800; margin-bottom:8px; }
+  .dashed-card p{ color:var(--text-dim); font-size:0.9rem; line-height:1.6; }
+
+  .cta-band{ padding:70px 0 90px; text-align:center; }
+  .cta-band h2{ font-size:clamp(1.5rem,3vw,2rem); font-weight:800; margin-bottom:10px; }
+  .cta-band p{ color:var(--text-dim); margin-bottom:26px; }
+
+  footer.site-footer{ margin-top:auto; border-top:1px solid var(--border); padding:28px 0 34px; }
+  .site-footer .shell{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+  .site-footer small{ color:var(--text-faint); font-size:0.8rem; }
+  .footer-links{ display:flex; gap:18px; }
+  .footer-links button{ background:none;border:0;cursor:pointer;color:var(--text-dim); font-size:0.8rem; font-weight:600; }
+  .footer-links button:hover{ color:#fff; }
+
+  @media (max-width:640px){
+    .party-info-row{ grid-template-columns:1fr 1fr; }
+  }
+
+  /* ============================================================
+     GATE / WIZARD SCREENS — matches the "Create a username" screen:
+     logo top-left, phase eyebrow top-right, big bold heading,
+     labeled bordered input, stacked pill buttons at the bottom.
+     ============================================================ */
+  .gate-shell{ min-height:100vh; display:flex; flex-direction:column; }
+  .gate-header{ display:flex; align-items:center; justify-content:space-between; padding:26px 24px 0; }
+  .gate-header .logo-mark{ font-size:1.6rem; }
+  .gate-body{ flex:1; padding: 20px 24px 40px; max-width:520px; margin:0 auto; width:100%; display:flex; flex-direction:column; }
+
+  .wizard-dots{ display:flex; gap:6px; margin: 18px 0 8px; }
+  .wizard-dots i{ flex:1; height:4px; border-radius:99px; background:rgba(255,255,255,0.14); overflow:hidden; }
+  .wizard-dots i span{ display:block; height:100%; width:0%; background:#fff; transition:width .4s var(--ease); }
+  .wizard-dots i.done span, .wizard-dots i.current span{ width:100%; }
+
+  .gate-body h1{ font-size:clamp(1.6rem,4vw,2.1rem); font-weight:800; line-height:1.2; letter-spacing:-0.01em; margin: 18px 0 10px; }
+  .gate-body > .sub{ color:var(--text-dim); font-size:0.94rem; line-height:1.6; margin-bottom:8px; }
+
+  .field{ margin-top:22px; }
+  .field label{ display:block; font-size:0.74rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-dim); margin-bottom:9px; }
+  .field .hint{ font-size:0.82rem; color:var(--text-faint); margin-top:8px; line-height:1.5; }
+  .input-wrap{ position:relative; }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="password"],
+  .field input[type="date"],
+  .field select,
+  .field textarea{
+    width:100%;
+    border:1.5px solid var(--border);
+    background: var(--bg-input);
+    border-radius: var(--radius-s);
+    padding: 15px 16px;
+    font-size:0.98rem;
+    color:var(--text);
+    transition: border-color .15s ease;
+  }
+  .field input::placeholder, .field textarea::placeholder{ color:var(--text-faint); }
+  .field textarea{ resize:vertical; min-height:76px; font-family:inherit; }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:#fff; }
+  .field input.error, .field select.error, .field textarea.error{ border-color: var(--danger); }
+  .field input.valid{ border-color: var(--success); }
+  .field-error{ display:none; align-items:center; gap:7px; color: var(--danger); font-size:0.82rem; font-weight:600; margin-top:9px; }
+  .field-error.show{ display:flex; }
+  .field-error::before{ content:"!"; width:15px; height:15px; border-radius:50%; background:var(--danger); color:#000; font-size:0.66rem; display:flex; align-items:center; justify-content:center; flex:none; font-weight:800; }
+  .input-suffix-icon{ position:absolute; right:14px; top:50%; transform:translateY(-50%); display:none; color:var(--success); font-weight:800; }
+  .input-suffix-icon.show{ display:block; }
+  .input-status{ font-size:0.8rem; margin-top:8px; color:var(--text-faint); display:none; }
+  .input-status.show{ display:block; }
+  .input-status.checking{ color:var(--text-dim); }
+  .input-status.taken{ color:var(--danger); display:block; }
+
+  .password-toggle{ position:absolute; right:12px; top:11px; background:none; border:0; cursor:pointer; color:var(--text-dim); font-size:0.72rem; font-weight:700; padding:6px 8px; letter-spacing:0.05em; }
+
+  .checkbox-row{ display:flex; align-items:flex-start; gap:10px; }
+  .checkbox-row input[type="checkbox"]{ margin-top:3px; width:18px; height:18px; accent-color:#fff; flex:none; }
+  .checkbox-row label{ font-size:0.86rem; color:var(--text-dim); line-height:1.55; }
+  .checkbox-row button.link{ background:none;border:0;padding:0; color:#fff; font-weight:700; text-decoration:underline; cursor:pointer; font-size:inherit; }
+
+  .switcher{ text-align:center; margin-top:24px; font-size:0.88rem; color:var(--text-dim); }
+  .switcher button{ background:none; border:0; color:#fff; font-weight:700; text-decoration:underline; cursor:pointer; font-size:inherit; }
+
+  .banner{ display:none; align-items:flex-start; gap:10px; border:1px solid; border-radius: var(--radius-s); padding: 13px 14px; margin-top:20px; font-size:0.86rem; line-height:1.5; font-weight:500; }
+  .banner.show{ display:flex; }
+  .banner.error{ border-color:rgba(255,107,107,0.4); background:rgba(255,107,107,0.08); color:#FFB3B3; }
+  .banner.success{ border-color:rgba(62,207,142,0.4); background:rgba(62,207,142,0.08); color:#9DEFC6; }
+  .banner .banner-icon{ flex:none; width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-size:0.7rem; font-weight:800; margin-top:1px;}
+  .banner.error .banner-icon{ background:var(--danger); }
+  .banner.success .banner-icon{ background:var(--success); }
+  .banner .banner-close{ margin-left:auto; background:none; border:0; cursor:pointer; color:inherit; opacity:0.6; font-size:1rem; line-height:1; }
+  .banner .banner-close:hover{ opacity:1; }
+
+  .toast-host{ position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:10px; width:min(420px, calc(100vw - 32px)); }
+  .toast{ background:#fff; color:#000; border-radius:14px; padding:13px 16px; font-size:0.87rem; font-weight:700; display:flex; align-items:center; gap:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.6); animation: toastIn .3s var(--ease); }
+  .toast.error{ background:var(--danger); color:#1A0000; }
+  .toast.success{ background:var(--success); color:#04150D; }
+  @keyframes toastIn{ from{opacity:0; transform:translateY(-10px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---- OTP ---- */
+  .otp-icon-badge{ width:52px; height:52px; border-radius:16px; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:18px; }
+  .otp-target{ font-weight:700; color:#fff; }
+  .otp-boxes{ display:flex; gap:10px; margin: 22px 0 6px; }
+  .otp-boxes input{
+    width:100%; aspect-ratio:1/1; text-align:center; font-size:1.3rem; font-weight:700;
+    border:1.5px solid var(--border); border-radius:14px; background:var(--bg-input); color:#fff;
+    transition: border-color .15s ease, transform .12s ease;
+  }
+  .otp-boxes input:focus{ outline:none; border-color:#fff; transform:scale(1.04); }
+  .otp-boxes input.error{ border-color:var(--danger); animation: shake .32s; }
+  .otp-boxes input.filled{ border-color: var(--border-strong); }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+
+  .otp-meta{ display:flex; justify-content:space-between; align-items:center; margin: 16px 0 6px; font-size:0.85rem; }
+  .otp-timer{ color:var(--text-dim); font-variant-numeric: tabular-nums; }
+  .resend-btn{ background:none;border:0;cursor:pointer; font-weight:700; color:#fff; text-decoration:underline; }
+  .resend-btn:disabled{ color:var(--text-faint); text-decoration:none; cursor:not-allowed; }
+  .otp-hint-box{ border:1.5px dashed var(--border-strong); border-radius:var(--radius-s); padding:13px 14px; font-size:0.82rem; color:var(--text-dim); margin-top:20px; line-height:1.55; }
+
+  /* ---- pronoun / interest chips ---- */
+  .chip-group{ display:flex; flex-wrap:wrap; gap:9px; }
+  .chip{ border:1.5px solid var(--border); background:transparent; color:var(--text); border-radius:999px; padding:10px 16px; font-size:0.87rem; font-weight:600; cursor:pointer; transition: all .14s ease; }
+  .chip:hover{ border-color:var(--border-strong); }
+  .chip.selected{ background:#fff; border-color:#fff; color:#000; }
+  .chip-counter{ font-size:0.78rem; color:var(--text-faint); margin-top:9px; }
+  .custom-pronoun-field{ margin-top:14px; display:none; }
+  .custom-pronoun-field.show{ display:block; }
+  .char-counter{ text-align:right; font-size:0.76rem; color:var(--text-faint); margin-top:6px; }
+  .char-counter.warn{ color:var(--danger); }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media (max-width:420px){ .two-col{ grid-template-columns:1fr; } }
+  .select-wrap{ position:relative; }
+  .select-wrap::after{ content:"⌄"; position:absolute; right:15px; top:50%; transform:translateY(-45%); font-size:1.1rem; color:var(--text-dim); pointer-events:none; }
+  .select-wrap select{ appearance:none; -webkit-appearance:none; }
+  .select-wrap select:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  /* ---- terms page ---- */
+  .terms-shell{ padding: 40px 20px 70px; }
+  .terms-doc{ max-width:700px; margin:0 auto; }
+  .terms-doc h1{ font-size:1.8rem; font-weight:800; letter-spacing:-0.01em; }
+  .terms-doc .updated{ color:var(--text-faint); font-size:0.85rem; margin-top:8px; }
+  .terms-doc section{ margin-top:28px; border-top:1px solid var(--border); padding-top:22px; }
+  .terms-doc h2{ font-size:1rem; font-weight:700; margin-bottom:9px; }
+  .terms-doc p{ font-size:0.92rem; color:var(--text-dim); line-height:1.7; }
+  .terms-doc ul{ margin:10px 0 0; padding-left:20px; color:var(--text-dim); font-size:0.92rem; line-height:1.75; }
+  .terms-accept-bar{ position:sticky; bottom:0; margin-top:36px; background:rgba(0,0,0,0.92); backdrop-filter:blur(8px); border:1px solid var(--border); border-radius: var(--radius-m); padding:22px; }
+
+  /* ---- success / profile recreation ---- */
+  .profile-hero{ text-align:center; padding:56px 20px 0; }
+  .profile-avatar{
+    width:96px; height:96px; margin:0 auto 20px; border-radius:50%;
+    background: linear-gradient(160deg, #2a2a2a, #050505);
+    border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Playfair Display', serif; font-weight:800; font-size:2.6rem; color:rgba(255,255,255,0.9);
+  }
+  .profile-hero h1{ font-size:1.7rem; font-weight:800; }
+  .profile-hero h1 span{ color:var(--text-dim); font-weight:600; font-size:1.2rem; }
+  .profile-hero .handle{ color:var(--text-dim); font-size:0.94rem; margin-top:4px; }
+  .profile-success-note{ color:var(--text-dim); max-width:44ch; margin:18px auto 0; line-height:1.6; font-size:0.95rem; }
+
+  .stat-row{ display:flex; justify-content:center; gap:0; margin:34px auto 0; max-width:360px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:18px 0; }
+  .stat-row .stat{ flex:1; text-align:center; }
+  .stat-row .stat + .stat{ border-left:1px solid var(--border); }
+  .stat-row strong{ display:block; font-size:1.2rem; font-weight:800; }
+  .stat-row span{ font-size:0.7rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-faint); }
+
+  .success-section{ max-width:460px; margin:0 auto; padding:36px 24px 0; }
+  .success-actions{ margin-top:36px; display:flex; flex-direction:column; gap:12px; max-width:460px; margin-left:auto; margin-right:auto; padding:0 24px 70px; }
+
+  @media (max-width:520px){
+    .gate-header{ padding:22px 20px 0; }
+    .gate-body{ padding:20px 20px 40px; }
+    .otp-boxes{ gap:7px; }
+    .otp-boxes input{ font-size:1.05rem; }
+  }
+
+  /* ============================================================
+     ENHANCEMENTS — typo correction, username suggestions,
+     resume-in-progress, geolocation, confetti
+     ============================================================ */
+  .email-suggestion{ display:none; margin-top:9px; font-size:0.85rem; color:var(--text-dim); }
+  .email-suggestion.show{ display:block; }
+  .email-suggestion button{ background:none; border:0; color:#fff; font-weight:700; text-decoration:underline; cursor:pointer; font-size:inherit; padding:0; }
+
+  .username-suggestions{ display:none; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .username-suggestions.show{ display:flex; }
+  .username-suggestions .chip{ padding:7px 13px; font-size:0.8rem; }
+
+  .use-location-btn{
+    display:inline-flex; align-items:center; gap:7px; background:none; border:0; cursor:pointer;
+    color:var(--text-dim); font-weight:600; font-size:0.84rem; padding:0; margin-top:-6px; margin-bottom:18px;
+    text-decoration:underline; text-underline-offset:3px;
+  }
+  .use-location-btn:hover{ color:#fff; }
+  .use-location-btn[data-loading="true"]{ opacity:0.6; pointer-events:none; }
+
+  .resume-strip{
+    display:none; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;
+    background:#0B0B0B; border-bottom:1px solid var(--border); padding:13px 20px; font-size:0.86rem; color:var(--text-dim);
+  }
+  .resume-strip.show{ display:flex; }
+  .resume-strip strong{ color:#fff; }
+
+  .confetti-piece{
+    position:fixed; top:-12px; width:8px; height:14px; opacity:0.95; z-index:300; border-radius:2px;
+    animation: confettiFall linear forwards; pointer-events:none;
+  }
+  @keyframes confettiFall{ to{ transform: translateY(112vh) rotate(560deg); opacity:0; } }
+</style>
+</head>
+<body>
+
+<div class="toast-host" id="toastHost" aria-live="polite"></div>
+
+<div id="app">
+
+  <!-- ============================================================
+       NAV
+       ============================================================ -->
+  <header class="topnav">
+    <div class="shell">
+      <button class="brand" data-nav="landing" aria-label="Extroverts home">
+        <span class="logo-mark">E<span class="dot"></span></span>
+      </button>
+      <nav class="nav-actions">
+        <button class="btn btn-ghost btn-sm" data-nav="login">Log in</button>
+        <button class="btn btn-primary btn-sm" data-nav="terms">Get started</button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="resume-strip" id="resumeStrip">
+    <span id="resumeStripText">Continue where you left off?</span>
+    <button class="btn btn-secondary btn-sm" id="resumeBtn">Continue</button>
+    <button class="btn-text" id="dismissResumeBtn">Dismiss</button>
+  </div>
+
+  <!-- ============================================================
+       LANDING
+       ============================================================ -->
+  <main class="view is-active" id="view-landing">
+
+    <section class="hero">
+      <div class="hero-mesh" aria-hidden="true"></div>
+      <div class="hero-mountain" aria-hidden="true"></div>
+      <div class="logo-mark hero-mark">E<span class="dot"></span></div>
+      <p class="hero-tagline">Life happens out there.</p>
+      <h1 class="hero-wordmark">EXTROVERTS</h1>
+      <p class="hero-sub">Random people. Real parties. Skip the endless scrolling and RSVP to something actually happening near you tonight.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary btn-block" data-nav="terms">✉ Continue with email</button>
+        <button class="btn btn-secondary btn-block" data-scroll="preview">Browse</button>
+      </div>
+      <p class="hero-legal">By continuing, you agree to our <button data-nav="terms">Terms &amp; Conditions</button> and <button data-nav="terms">Privacy Policy</button>.</p>
+    </section>
+
+    <section class="section" id="preview">
+      <div class="shell">
+        <div class="eyebrow">Your club</div>
+        <h2>Everyone starts Bronze.</h2>
+        <p class="desc">Show up, host, and RSVP your way to Ivory Club status — with perks that actually mean something at the door.</p>
+        <div class="club-card">
+          <div>
+            <strong>Bronze Club Member</strong>
+            <div class="club-tokens">⭐ 0 Honorary Vibe Tokens</div>
+          </div>
+          <div class="hex"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="eyebrow">After-party memories</div>
+        <h2>Proof it actually happened.</h2>
+        <p class="desc">Every gathering leaves a trace — photos your crew drops afterward, right in the feed.</p>
+        <div class="memory-strip">
+          <div class="memory-card" style="--m1:#E63E6D; --m2:#33272A;"><span class="time-badge">2h</span><span class="cap">lextigress, 26</span></div>
+          <div class="memory-card" style="--m1:#3B3B98; --m2:#000000;"><span class="time-badge">4h</span><span class="cap">Shivam, 25</span></div>
+          <div class="memory-card" style="--m1:#1F8A70; --m2:#0B2E26;"><span class="time-badge">10h</span><span class="cap">Varun, 23</span></div>
+          <div class="memory-card" style="--m1:#6C5CE7; --m2:#1B1730;"><span class="time-badge">15h</span><span class="cap">Shinchan, 19</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="eyebrow">Happening near you</div>
+        <h2>Real invitations, not just chats.</h2>
+        <p class="desc">Every party card tells you exactly when, where, and how many spots are left — no back-and-forth required.</p>
+        <div class="party-card">
+          <div class="party-banner"></div>
+          <div class="party-body">
+            <div class="party-title-row">
+              <h3>Koi din m dinner karega?</h3>
+              <div class="hex" style="width:26px;height:26px;"></div>
+            </div>
+            <div class="party-meta-label">Private party</div>
+            <span class="chip-tag" style="background:var(--coral);">🥞 Brunch Outing</span>
+            <div class="party-host">
+              <span class="avatar-circle">G</span> @googlehoney
+            </div>
+            <div class="party-info-row">
+              <div class="cell">12:00 PM 🕐</div>
+              <div class="cell">21/10/26 📅</div>
+            </div>
+            <div class="party-loc-row">
+              <span>Leda Cafe, 92, Old, E 4th St, LIG Colony, KK Nagar, Madurai…</span> 📍
+            </div>
+            <button class="view-flyer-btn" type="button">VIEW FLYER</button>
+          </div>
+          <div class="spots-banner" style="background:#5A2A3A;">12 spots left!</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="eyebrow">Hosting</div>
+        <h2>Or throw your own.</h2>
+        <p class="desc">Run up to three active parties at once — dinner reservations, co-work sessions, coffee breaks, whatever's your vibe.</p>
+        <div class="dashed-card">
+          <h3>Host an Event</h3>
+          <p>You haven't been partying enough! Create up to 3 active parties — more as you complete one.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta-band">
+      <div class="shell">
+        <h2>Your next Friday night is two minutes away.</h2>
+        <p>Email, a verification code, and a few details about you.</p>
+        <button class="btn btn-primary" data-nav="terms">Get started free</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================================
+       TERMS & CONDITIONS
+       ============================================================ -->
+  <section class="view" id="view-terms">
+    <div class="gate-header">
+      <span class="logo-mark">E<span class="dot"></span></span>
+      <span class="eyebrow">Before you join</span>
+    </div>
+    <div class="terms-shell shell" style="max-width:100%;">
+      <button class="btn-back" data-nav="landing" style="margin-top:8px;">← Back</button>
+      <div class="terms-doc">
+        <h1>Terms &amp; Community Guidelines</h1>
+        <p class="updated">Last updated September 2026 · Applies to every Extroverts account</p>
+
+        <section>
+          <h2>1. Who this is for</h2>
+          <p>Extroverts is a space for people 18 and older to organize and join real, in-person gatherings. By continuing, you confirm the information you provide during signup — including your date of birth — is accurate.</p>
+        </section>
+        <section>
+          <h2>2. Your account</h2>
+          <p>You're responsible for keeping your login details private and for anything that happens under your account. One person, one account — we don't allow accounts created on someone else's behalf.</p>
+        </section>
+        <section>
+          <h2>3. How we verify you</h2>
+          <ul>
+            <li>We'll send a one-time code to confirm the email you sign up with.</li>
+            <li>We ask for your age to keep the community 18+, and your general location so nearby parties make sense.</li>
+            <li>You can request your data be deleted at any time from account settings.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>4. Showing up</h2>
+          <p>RSVPing to a gathering is a real commitment to real people who blocked out real time. Repeated no-shows or unsafe behavior at events can result in suspension.</p>
+        </section>
+        <section>
+          <h2>5. What we don't allow</h2>
+          <ul>
+            <li>Harassment, hate speech, or discrimination toward other members</li>
+            <li>Using the app to sell, solicit, or promote unrelated services</li>
+            <li>Misrepresenting your identity, age, or the nature of an event</li>
+          </ul>
+        </section>
+        <section>
+          <h2>6. Changes</h2>
+          <p>We'll let you know if these terms change in any way that affects your rights. Continuing to use Extroverts after an update means you accept the revised terms.</p>
+        </section>
+
+        <div class="terms-accept-bar">
+          <div class="checkbox-row" style="margin-bottom:18px;">
+            <input type="checkbox" id="termsCheckbox" />
+            <label for="termsCheckbox">I'm 18 or older and I agree to the Terms &amp; Community Guidelines and the Privacy Policy.</label>
+          </div>
+          <button class="btn btn-primary btn-block" id="termsContinueBtn" data-nav="email" disabled>Accept &amp; continue</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       LOGIN
+       ============================================================ -->
+  <section class="view" id="view-login">
+    <div class="gate-shell">
+      <div class="gate-header">
+        <span class="logo-mark">E<span class="dot"></span></span>
+        <span class="eyebrow">Welcome back</span>
+      </div>
+      <div class="gate-body">
+        <button class="btn-back" data-nav="landing">← Back</button>
+        <h1>Log back in</h1>
+        <p class="sub">See what's happening near you tonight.</p>
+
+        <div class="banner error" id="loginBanner">
+          <span class="banner-icon">!</span>
+          <span id="loginBannerText"></span>
+          <button class="banner-close" data-dismiss="loginBanner">✕</button>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <div class="input-wrap">
+              <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email" />
+              <span class="input-suffix-icon" id="loginEmailValid">✓</span>
+            </div>
+            <div class="field-error" id="loginEmailError"></div>
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <div class="input-wrap">
+              <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="password-toggle" data-toggle="loginPassword">SHOW</button>
+            </div>
+            <div class="field-error" id="loginPasswordError"></div>
+          </div>
+          <div class="stacked-actions">
+            <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">
+              <span class="btn-label">Log in</span>
+              <span class="spinner"></span>
+            </button>
+          </div>
+        </form>
+        <div class="switcher">New here? <button data-nav="terms">Create an account</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       EMAIL (verification gate, step 1 of 2)
+       ============================================================ -->
+  <section class="view" id="view-email">
+    <div class="gate-shell">
+      <div class="gate-header">
+        <span class="logo-mark">E<span class="dot"></span></span>
+        <span class="eyebrow">Sign up</span>
+      </div>
+      <div class="gate-body">
+        <button class="btn-back" data-nav="terms">← Back</button>
+
+        <h1>What's your email?</h1>
+        <p class="sub">We'll send a quick code to verify it's you — no password needed yet.</p>
+
+        <div class="banner error" id="emailBanner">
+          <span class="banner-icon">!</span>
+          <span id="emailBannerText"></span>
+          <button class="banner-close" data-dismiss="emailBanner">✕</button>
+        </div>
+
+        <div class="field">
+          <label for="signupEmail">Email address</label>
+          <div class="input-wrap">
+            <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email" />
+            <span class="input-suffix-icon" id="signupEmailValid">✓</span>
+          </div>
+          <div class="field-error" id="signupEmailError"></div>
+          <div class="email-suggestion" id="emailSuggestion"></div>
+        </div>
+
+        <div class="stacked-actions">
+          <button class="btn btn-primary btn-block" id="emailNextBtn">
+            <span class="btn-label">Send verification code</span>
+            <span class="spinner"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       OTP (verification gate, step 2 of 2)
+       ============================================================ -->
+  <section class="view" id="view-otp">
+    <div class="gate-shell">
+      <div class="gate-header">
+        <span class="logo-mark">E<span class="dot"></span></span>
+        <span class="eyebrow">Verifying</span>
+      </div>
+      <div class="gate-body">
+        <button class="btn-back" data-nav="email">← Back</button>
+        <div class="otp-icon-badge">✉️</div>
+        <h1>Check your inbox</h1>
+        <p class="sub">Enter the 6-digit code sent to <span class="otp-target" id="otpTargetEmail">you@example.com</span></p>
+
+        <div class="banner error" id="otpBanner">
+          <span class="banner-icon">!</span>
+          <span id="otpBannerText"></span>
+          <button class="banner-close" data-dismiss="otpBanner">✕</button>
+        </div>
+
+        <div class="otp-boxes" id="otpBoxes" role="group" aria-label="6 digit verification code">
+          <input inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 1" />
+          <input inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 2" />
+          <input inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 3" />
+          <input inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 4" />
+          <input inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 5" />
+          <input inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="Digit 6" />
+        </div>
+        <div class="field-error" id="otpError"></div>
+
+        <div class="otp-meta">
+          <span class="otp-timer" id="otpTimer">Code expires in 0:30</span>
+          <button class="resend-btn" id="resendBtn" disabled>Resend code</button>
+        </div>
+
+        <div class="stacked-actions">
+          <button class="btn btn-primary btn-block" id="otpNextBtn">
+            <span class="btn-label">Verify &amp; continue</span>
+            <span class="spinner"></span>
+          </button>
+        </div>
+        <div class="otp-hint-box">Demo mode: any 6-digit code works <em>except</em> one ending in "000" — that's reserved to show what an invalid code looks like.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       WIZARD — 4 steps, "Getting ready" phase, mirrors the
+       confirmed username screen exactly (label, heading, input,
+       helper text, stacked Next/Back pills)
+       ============================================================ -->
+  <section class="view" id="view-wizard">
+    <div class="gate-shell">
+      <div class="gate-header">
+        <span class="logo-mark">E<span class="dot"></span></span>
+        <span class="eyebrow">Getting ready</span>
+      </div>
+      <div class="gate-body">
+        <div class="wizard-dots" id="wizardDots">
+          <i data-idx="1"><span></span></i>
+          <i data-idx="2"><span></span></i>
+          <i data-idx="3"><span></span></i>
+          <i data-idx="4"><span></span></i>
+        </div>
+
+        <div class="banner error" id="wizardBanner">
+          <span class="banner-icon">!</span>
+          <span id="wizardBannerText"></span>
+          <button class="banner-close" data-dismiss="wizardBanner">✕</button>
+        </div>
+
+        <!-- STEP 1 — USERNAME -->
+        <div class="wizard-step" id="step-1">
+          <h1>Create a username that fits your vibe!</h1>
+          <div class="field">
+            <label for="fieldUsername">Username</label>
+            <div class="input-wrap">
+              <input type="text" id="fieldUsername" maxlength="20" placeholder="@yourname" autocomplete="off" />
+              <span class="input-suffix-icon" id="usernameValid">✓</span>
+            </div>
+            <div class="field-error" id="fieldUsernameError"></div>
+            <div class="input-status" id="usernameStatus"></div>
+            <div class="username-suggestions" id="usernameSuggestions"></div>
+            <div class="hint">All your Superlatives and Invites will come your way with this name, so make it unforgettable!</div>
+          </div>
+          <div class="stacked-actions">
+            <button class="btn btn-primary btn-block" id="step1NextBtn" disabled>
+              <span class="btn-label">Next</span>
+              <span class="spinner"></span>
+            </button>
+            <button class="btn btn-secondary btn-block" data-nav="otp">Back</button>
+          </div>
+        </div>
+
+        <!-- STEP 2 — NAME + DATE OF BIRTH -->
+        <div class="wizard-step" id="step-2" style="display:none;">
+          <h1>What should we call you, and when's your birthday?</h1>
+          <div class="field">
+            <label for="fieldName">Full name</label>
+            <input type="text" id="fieldName" maxlength="50" placeholder="Your name" autocomplete="name" />
+            <div class="field-error" id="fieldNameError"></div>
+          </div>
+          <div class="field">
+            <label for="fieldDob">Date of birth</label>
+            <input type="date" id="fieldDob" />
+            <div class="hint" id="ageHint">You must be 18 or older to join Extroverts.</div>
+            <div class="field-error" id="fieldDobError"></div>
+          </div>
+          <div class="stacked-actions">
+            <button class="btn btn-primary btn-block" id="step2NextBtn">
+              <span class="btn-label">Next</span>
+              <span class="spinner"></span>
+            </button>
+            <button class="btn btn-secondary btn-block" data-wizard-back="1">Back</button>
+          </div>
+        </div>
+
+        <!-- STEP 3 — PRONOUNS -->
+        <div class="wizard-step" id="step-3" style="display:none;">
+          <h1>How do you identify?</h1>
+          <p class="sub">Shown on your profile, right under your name.</p>
+          <div class="field" style="margin-top:14px;">
+            <div class="chip-group" id="pronounChips">
+              <button type="button" class="chip" data-pronoun="She/her">She/her</button>
+              <button type="button" class="chip" data-pronoun="He/his">He/his</button>
+              <button type="button" class="chip" data-pronoun="They/them">They/them</button>
+              <button type="button" class="chip" data-pronoun="custom">Something else</button>
+            </div>
+            <div class="custom-pronoun-field" id="customPronounWrap">
+              <input type="text" id="customPronoun" maxlength="24" placeholder="Type your pronouns" />
+            </div>
+            <div class="field-error" id="pronounError"></div>
+          </div>
+          <div class="stacked-actions">
+            <button class="btn btn-primary btn-block" id="step3NextBtn">
+              <span class="btn-label">Next</span>
+              <span class="spinner"></span>
+            </button>
+            <button class="btn btn-secondary btn-block" data-wizard-back="2">Back</button>
+          </div>
+        </div>
+
+        <!-- STEP 4 — LOCATION + VIBE -->
+        <div class="wizard-step" id="step-4" style="display:none;">
+          <h1>Where you're based &amp; what's your vibe</h1>
+          <p class="sub">We'll only ever show you parties you can actually reach.</p>
+
+          <button type="button" class="use-location-btn" id="useLocationBtn" style="margin-top:18px;">
+            <span class="btn-label">📍 Use my current location</span>
+            <span class="spinner" style="position:static; border-color:rgba(255,255,255,0.25); border-top-color:#fff; width:14px; height:14px; display:none;"></span>
+          </button>
+
+          <div class="two-col">
+            <div class="field" style="margin-top:0;">
+              <label for="fieldState">State</label>
+              <div class="select-wrap">
+                <select id="fieldState">
+                  <option value="">Select state</option>
+                </select>
+              </div>
+              <div class="field-error" id="fieldStateError"></div>
+            </div>
+            <div class="field" style="margin-top:0;">
+              <label for="fieldCity">City</label>
+              <div class="select-wrap">
+                <select id="fieldCity" disabled>
+                  <option value="">Select state first</option>
+                </select>
+              </div>
+              <div class="field-error" id="fieldCityError"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>What's your vibe? <span style="font-weight:400; text-transform:none; letter-spacing:0;">(pick 3–8)</span></label>
+            <div class="chip-group" id="interestChips">
+              <button type="button" class="chip" data-interest="Dinner Reservation">🍴 Dinner Reservation</button>
+              <button type="button" class="chip" data-interest="Brunch Outing">🥞 Brunch Outing</button>
+              <button type="button" class="chip" data-interest="Co-Work">💻 Co-Work</button>
+              <button type="button" class="chip" data-interest="Coffee Break">☕ Coffee Break</button>
+              <button type="button" class="chip" data-interest="Live Music">🎵 Live Music</button>
+              <button type="button" class="chip" data-interest="Board Games">🎲 Board Games</button>
+              <button type="button" class="chip" data-interest="Fitness">🏃 Fitness</button>
+              <button type="button" class="chip" data-interest="Outdoors">🏕️ Outdoors</button>
+              <button type="button" class="chip" data-interest="Art & Culture">🎨 Art &amp; Culture</button>
+              <button type="button" class="chip" data-interest="Gaming">🎮 Gaming</button>
+            </div>
+            <div class="chip-counter" id="interestCounter">0 of 8 selected</div>
+            <div class="field-error" id="interestError"></div>
+          </div>
+
+          <div class="field">
+            <label for="fieldBio">Short bio <span style="font-weight:400; text-transform:none; letter-spacing:0;">(optional)</span></label>
+            <textarea id="fieldBio" maxlength="150" placeholder="One or two lines about you..."></textarea>
+            <div class="char-counter" id="bioCounter">0 / 150</div>
+          </div>
+
+          <div class="stacked-actions">
+            <button class="btn btn-primary btn-block" id="step4SubmitBtn">
+              <span class="btn-label">Finish &amp; join Extroverts</span>
+              <span class="spinner"></span>
+            </button>
+            <button class="btn btn-secondary btn-block" data-wizard-back="3">Back</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SUCCESS — recreates the app's own profile screen using
+       the details just entered
+       ============================================================ -->
+  <section class="view" id="view-success">
+    <div class="profile-hero">
+      <div class="profile-avatar" id="successAvatar">B</div>
+      <h1 id="successNameAge">Name 23</h1>
+      <div class="handle" id="successHandle">@username · pronouns</div>
+      <p class="profile-success-note">You're in. Your profile is live — keep an eye on your email for gatherings happening near you this week.</p>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><strong>0</strong><span>Events</span></div>
+      <div class="stat"><strong>0</strong><span>Superlatives</span></div>
+      <div class="stat"><strong>0</strong><span>HVTs</span></div>
+    </div>
+
+    <div class="success-section">
+      <div class="eyebrow" style="margin-bottom:14px;">Club</div>
+      <div class="club-card">
+        <div>
+          <strong>Bronze Club Member</strong>
+          <div class="club-tokens">⭐ 0 Honorary Vibe Tokens</div>
+        </div>
+        <div class="hex"></div>
+      </div>
+    </div>
+
+    <div class="success-section">
+      <div class="eyebrow" style="margin-bottom:14px;">Based in</div>
+      <p id="successLocation" style="font-weight:700; font-size:1.02rem;">—</p>
+      <div class="eyebrow" style="margin:22px 0 10px;">Your vibe</div>
+      <div class="chip-group" id="successInterests"></div>
+    </div>
+
+    <div class="success-actions">
+      <button class="btn btn-primary btn-block" data-nav="landing">Back to home</button>
+      <button class="btn btn-secondary btn-block" id="startOverBtn">Create another test profile</button>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <small>Extroverts 2026 · Not affiliated with Google Play or the app it was inspired by</small>
+      <div class="footer-links">
+        <button data-nav="terms">Terms</button>
+        <button data-nav="landing">Home</button>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  view: 'landing',
+  step: 1,
+  data: {
+    email: '', otp: '', username: '', name: '', dob: '', age: null, pronoun: '',
+    stateVal: '', city: '', interests: [], bio: ''
+  },
+  otpAttempts: 0,
+  otpResendCount: 0,
+  otpTimerHandle: null,
+  otpSecondsLeft: 30,
+};
+
+const LOCATIONS = {
+  "Tamil Nadu": ["Chennai", "Madurai", "Coimbatore", "Tiruchirappalli"],
+  "Karnataka": ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi"],
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik"],
+  "Delhi NCR": ["New Delhi", "Gurugram", "Noida", "Faridabad"],
+  "Telangana": ["Hyderabad", "Warangal", "Nizamabad"],
+  "West Bengal": ["Kolkata", "Howrah", "Siliguri"]
+};
+
+const TAKEN_USERNAMES = ["admin", "test", "extrovert", "googlehoney", "barath", "vibe"];
+
+const EMAIL_TYPO_MAP = {
+  "gmial.com":"gmail.com", "gmai.com":"gmail.com", "gmail.co":"gmail.com", "gmal.com":"gmail.com",
+  "yahooo.com":"yahoo.com", "yaho.com":"yahoo.com",
+  "hotmial.com":"hotmail.com", "hotmai.com":"hotmail.com",
+  "outlok.com":"outlook.com", "outllook.com":"outlook.com"
+};
+
+const CITY_COORDS = {
+  "Chennai":[13.0827,80.2707], "Madurai":[9.9252,78.1198], "Coimbatore":[11.0168,76.9558], "Tiruchirappalli":[10.7905,78.7047],
+  "Bengaluru":[12.9716,77.5946], "Mysuru":[12.2958,76.6394], "Mangaluru":[12.9141,74.8560], "Hubballi":[15.3647,75.1240],
+  "Mumbai":[19.0760,72.8777], "Pune":[18.5204,73.8567], "Nagpur":[21.1458,79.0882], "Nashik":[19.9975,73.7898],
+  "New Delhi":[28.6139,77.2090], "Gurugram":[28.4595,77.0266], "Noida":[28.5355,77.3910], "Faridabad":[28.4089,77.3178],
+  "Hyderabad":[17.3850,78.4867], "Warangal":[17.9689,79.5941], "Nizamabad":[18.6725,78.0941],
+  "Kolkata":[22.5726,88.3639], "Howrah":[22.5958,88.2636], "Siliguri":[26.7271,88.3953]
+};
+const RESEND_DURATIONS = [30, 60, 90];
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function $(sel, ctx){ return (ctx||document).querySelector(sel); }
+function $all(sel, ctx){ return Array.from((ctx||document).querySelectorAll(sel)); }
+
+function showToast(message, type){
+  const host = $('#toastHost');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = message;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(), 320); }, 3400);
+}
+
+function setFieldError(inputEl, errorEl, message){
+  if(message){
+    inputEl.classList.add('error');
+    inputEl.classList.remove('valid');
+    errorEl.textContent = message;
+    errorEl.classList.add('show');
+  } else {
+    inputEl.classList.remove('error');
+    errorEl.classList.remove('show');
+    errorEl.textContent = '';
+  }
+}
+
+function setBanner(bannerId, textId, message){
+  const banner = $('#'+bannerId);
+  const text = $('#'+textId);
+  if(message){
+    text.textContent = message;
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
+  }
+}
+
+function setLoading(btn, isLoading){
+  btn.dataset.loading = isLoading ? 'true' : 'false';
+  btn.disabled = isLoading;
+}
+
+function saveProgress(view){
+  try{
+    sessionStorage.setItem('extroverts_signup_progress', JSON.stringify({ view: view || state.view, step: state.step, data: state.data }));
+  }catch(e){ /* storage unavailable — silently skip, it's a nice-to-have */ }
+}
+function loadProgress(){
+  try{
+    const raw = sessionStorage.getItem('extroverts_signup_progress');
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function clearProgress(){
+  try{ sessionStorage.removeItem('extroverts_signup_progress'); }catch(e){}
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const USERNAME_RE = /^[a-zA-Z0-9_.]{3,20}$/;
+function isWhitespaceOnly(val){ return val.length > 0 && val.trim().length === 0; }
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function navigate(view){
+  $all('.view').forEach(v => v.classList.remove('is-active'));
+  $('#view-' + view).classList.add('is-active');
+  state.view = view;
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  if(view !== 'wizard' && view !== 'otp' && state.otpTimerHandle){
+    clearInterval(state.otpTimerHandle);
+  }
+  autofocusActive();
+}
+
+$all('[data-nav]').forEach(el => {
+  el.addEventListener('click', () => {
+    const target = el.dataset.nav;
+    if(target === 'email' && !$('#termsCheckbox').checked) return;
+    if(target === 'wizard'){ resetWizardToStep(1); }
+    navigate(target);
+  });
+});
+
+$all('[data-scroll]').forEach(el => {
+  el.addEventListener('click', () => {
+    const target = document.getElementById(el.dataset.scroll);
+    if(target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+});
+
+$all('.banner-close').forEach(btn => {
+  btn.addEventListener('click', () => $('#' + btn.dataset.dismiss).classList.remove('show'));
+});
+
+$('#termsCheckbox').addEventListener('change', (e) => {
+  $('#termsContinueBtn').disabled = !e.target.checked;
+});
+
+$all('.password-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = $('#' + btn.dataset.toggle);
+    const isPwd = input.type === 'password';
+    input.type = isPwd ? 'text' : 'password';
+    btn.textContent = isPwd ? 'HIDE' : 'SHOW';
+  });
+});
+
+/* ============================================================
+   LOGIN (lightweight — signup wizard is the graded flow)
+   ============================================================ */
+$('#loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const emailInput = $('#loginEmail');
+  const pwdInput = $('#loginPassword');
+  let valid = true;
+
+  if(!emailInput.value.trim() || !EMAIL_RE.test(emailInput.value.trim())){
+    setFieldError(emailInput, $('#loginEmailError'), 'Enter a valid email address.');
+    valid = false;
+  } else {
+    setFieldError(emailInput, $('#loginEmailError'), '');
+  }
+  if(!pwdInput.value || isWhitespaceOnly(pwdInput.value)){
+    setFieldError(pwdInput, $('#loginPasswordError'), 'Enter your password.');
+    valid = false;
+  } else {
+    setFieldError(pwdInput, $('#loginPasswordError'), '');
+  }
+  if(!valid) return;
+
+  setBanner('loginBanner', 'loginBannerText', '');
+  const btn = $('#loginSubmitBtn');
+  setLoading(btn, true);
+  setTimeout(() => {
+    setLoading(btn, false);
+    setBanner('loginBanner', 'loginBannerText', "We couldn't find an account with that email and password. Double-check your details, or create a new account below.");
+  }, 1100);
+});
+
+/* ============================================================
+   EMAIL GATE
+   ============================================================ */
+function validateSignupEmail(showState){
+  const input = $('#signupEmail');
+  const val = input.value.trim();
+  const errEl = $('#signupEmailError');
+  const validIcon = $('#signupEmailValid');
+  if(!val){
+    if(showState) setFieldError(input, errEl, 'Email is required.');
+    validIcon.classList.remove('show');
+    return false;
+  }
+  if(isWhitespaceOnly(input.value)){
+    if(showState) setFieldError(input, errEl, 'Email cannot be blank.');
+    validIcon.classList.remove('show');
+    return false;
+  }
+  if(!EMAIL_RE.test(val)){
+    if(showState) setFieldError(input, errEl, 'Enter a valid email address, like name@example.com.');
+    validIcon.classList.remove('show');
+    return false;
+  }
+  setFieldError(input, errEl, '');
+  input.classList.add('valid');
+  validIcon.classList.add('show');
+  return true;
+}
+
+function checkEmailTypo(){
+  const box = $('#emailSuggestion');
+  const val = $('#signupEmail').value.trim();
+  const at = val.lastIndexOf('@');
+  if(at === -1){ box.classList.remove('show'); box.innerHTML=''; return; }
+  const domain = val.slice(at+1).toLowerCase();
+  const fix = EMAIL_TYPO_MAP[domain];
+  if(fix){
+    const corrected = val.slice(0, at+1) + fix;
+    box.innerHTML = `Did you mean <button type="button" id="applyEmailFix">${corrected}</button>?`;
+    box.classList.add('show');
+    $('#applyEmailFix').addEventListener('click', () => {
+      $('#signupEmail').value = corrected;
+      box.classList.remove('show'); box.innerHTML='';
+      validateSignupEmail(true);
+    });
+  } else {
+    box.classList.remove('show'); box.innerHTML='';
+  }
+}
+
+$('#signupEmail').addEventListener('input', () => { validateSignupEmail(false); checkEmailTypo(); });
+$('#signupEmail').addEventListener('blur', () => validateSignupEmail(true));
+
+$('#emailNextBtn').addEventListener('click', () => {
+  const ok = validateSignupEmail(true);
+  if(!ok) return;
+  setBanner('emailBanner', 'emailBannerText', '');
+  const btn = $('#emailNextBtn');
+  setLoading(btn, true);
+  setTimeout(() => {
+    setLoading(btn, false);
+    state.data.email = $('#signupEmail').value.trim();
+    $('#otpTargetEmail').textContent = state.data.email;
+    state.otpAttempts = 0;
+    state.otpResendCount = 0;
+    navigate('otp');
+    saveProgress('otp');
+    startOtpTimer();
+    showToast('Verification code sent', 'success');
+  }, 900);
+});
+
+/* ============================================================
+   OTP GATE
+   ============================================================ */
+const otpInputs = $all('#otpBoxes input');
+otpInputs.forEach((input, idx) => {
+  input.addEventListener('input', (e) => {
+    const val = e.target.value.replace(/[^0-9]/g, '');
+    e.target.value = val.slice(0,1);
+    input.classList.toggle('filled', !!e.target.value);
+    if(val && idx < otpInputs.length - 1){
+      otpInputs[idx+1].focus();
+    }
+    clearOtpError();
+    if(getOtpValue().length === 6 && $('#otpNextBtn').dataset.loading !== 'true'){
+      setTimeout(() => $('#otpNextBtn').click(), 120);
+    }
+  });
+  input.addEventListener('keydown', (e) => {
+    if(e.key === 'Backspace' && !e.target.value && idx > 0){
+      otpInputs[idx-1].focus();
+    }
+  });
+  input.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g,'').slice(0,6);
+    pasted.split('').forEach((ch, i) => {
+      if(otpInputs[i]){ otpInputs[i].value = ch; otpInputs[i].classList.add('filled'); }
+    });
+    if(pasted.length) otpInputs[Math.min(pasted.length,6)-1].focus();
+  });
+});
+
+function clearOtpError(){
+  $('#otpError').classList.remove('show');
+  otpInputs.forEach(i => i.classList.remove('error'));
+}
+
+function getOtpValue(){ return otpInputs.map(i => i.value).join(''); }
+
+function startOtpTimer(){
+  clearInterval(state.otpTimerHandle);
+  const duration = RESEND_DURATIONS[Math.min(state.otpResendCount || 0, RESEND_DURATIONS.length - 1)];
+  state.otpSecondsLeft = duration;
+  $('#resendBtn').disabled = true;
+  updateOtpTimerLabel();
+  state.otpTimerHandle = setInterval(() => {
+    state.otpSecondsLeft--;
+    updateOtpTimerLabel();
+    if(state.otpSecondsLeft <= 0){
+      clearInterval(state.otpTimerHandle);
+      $('#resendBtn').disabled = false;
+      $('#otpTimer').textContent = 'Code expired';
+    }
+  }, 1000);
+}
+
+function updateOtpTimerLabel(){
+  const s = Math.max(state.otpSecondsLeft, 0);
+  const mm = Math.floor(s/60);
+  const ss = String(s%60).padStart(2,'0');
+  $('#otpTimer').textContent = `Code expires in ${mm}:${ss}`;
+}
+
+$('#resendBtn').addEventListener('click', () => {
+  if($('#resendBtn').disabled) return;
+  otpInputs.forEach(i => { i.value=''; i.classList.remove('filled','error'); });
+  clearOtpError();
+  otpInputs[0].focus();
+  state.otpResendCount = (state.otpResendCount || 0) + 1;
+  startOtpTimer();
+  showToast('New code sent to ' + state.data.email, 'success');
+});
+
+$('#otpNextBtn').addEventListener('click', () => {
+  const code = getOtpValue();
+  clearOtpError();
+  setBanner('otpBanner','otpBannerText','');
+  if(code.length < 6){
+    $('#otpError').textContent = 'Enter all 6 digits.';
+    $('#otpError').classList.add('show');
+    otpInputs.forEach(i => { if(!i.value) i.classList.add('error'); });
+    return;
+  }
+  const btn = $('#otpNextBtn');
+  setLoading(btn, true);
+  setTimeout(() => {
+    setLoading(btn, false);
+    const invalid = code.endsWith('000');
+    if(invalid){
+      state.otpAttempts++;
+      otpInputs.forEach(i => i.classList.add('error'));
+      if(state.otpAttempts >= 3){
+        otpInputs.forEach(i => i.disabled = true);
+        $('#resendBtn').disabled = false;
+        setBanner('otpBanner','otpBannerText','Too many incorrect attempts. Tap "Resend code" to get a fresh one.');
+      } else {
+        $('#otpError').textContent = 'That code is incorrect. Check your inbox and try again.';
+        $('#otpError').classList.add('show');
+      }
+      return;
+    }
+    state.data.otp = code;
+    otpInputs.forEach(i => i.disabled = false);
+    navigate('wizard');
+    resetWizardToStep(1);
+    showToast('Email verified', 'success');
+  }, 1000);
+});
+
+/* ============================================================
+   WIZARD STEP 1 — USERNAME
+   ============================================================ */
+let usernameCheckTimer = null;
+function validateUsername(showState){
+  const input = $('#fieldUsername');
+  const errEl = $('#fieldUsernameError');
+  const val = input.value.trim();
+  const validIcon = $('#usernameValid');
+  const statusEl = $('#usernameStatus');
+  statusEl.classList.remove('show','taken','checking');
+
+  if(!val){
+    if(showState) setFieldError(input, errEl, 'Pick a username.');
+    validIcon.classList.remove('show');
+    return false;
+  }
+  if(isWhitespaceOnly(input.value)){
+    if(showState) setFieldError(input, errEl, "Username can't be just spaces.");
+    validIcon.classList.remove('show');
+    return false;
+  }
+  if(!USERNAME_RE.test(val)){
+    if(showState) setFieldError(input, errEl, '3–20 characters: letters, numbers, underscores, or periods only.');
+    validIcon.classList.remove('show');
+    return false;
+  }
+  if(TAKEN_USERNAMES.includes(val.toLowerCase())){
+    setFieldError(input, errEl, '');
+    validIcon.classList.remove('show');
+    statusEl.textContent = `@${val} is already taken — try one of these:`;
+    statusEl.classList.add('show','taken');
+    renderUsernameSuggestions(val);
+    return false;
+  }
+  setFieldError(input, errEl, '');
+  input.classList.add('valid');
+  validIcon.classList.add('show');
+  $('#usernameSuggestions').classList.remove('show');
+  $('#usernameSuggestions').innerHTML = '';
+  return true;
+}
+
+function renderUsernameSuggestions(base){
+  const clean = base.replace(/[^a-zA-Z0-9_.]/g,'');
+  const candidates = [
+    `${clean}${Math.floor(10 + Math.random()*89)}`,
+    `${clean}.irl`,
+    `the_real_${clean}`
+  ].filter(c => !TAKEN_USERNAMES.includes(c.toLowerCase())).slice(0,3);
+  const box = $('#usernameSuggestions');
+  box.innerHTML = candidates.map(c => `<button type="button" class="chip" data-suggest="${c}">@${c}</button>`).join('');
+  box.classList.add('show');
+  $all('[data-suggest]', box).forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('#fieldUsername').value = btn.dataset.suggest;
+      box.classList.remove('show'); box.innerHTML='';
+      const ok = validateUsername(true);
+      $('#step1NextBtn').disabled = !ok;
+    });
+  });
+}
+
+$('#fieldUsername').addEventListener('input', () => {
+  clearTimeout(usernameCheckTimer);
+  $('#step1NextBtn').disabled = true;
+  $('#usernameSuggestions').classList.remove('show');
+  $('#usernameSuggestions').innerHTML = '';
+  const statusEl = $('#usernameStatus');
+  const val = $('#fieldUsername').value.trim();
+  if(val && USERNAME_RE.test(val)){
+    statusEl.textContent = 'Checking availability…';
+    statusEl.classList.add('show','checking');
+    statusEl.classList.remove('taken');
+  } else {
+    statusEl.classList.remove('show','checking');
+  }
+  usernameCheckTimer = setTimeout(() => {
+    const ok = validateUsername(false);
+    $('#step1NextBtn').disabled = !ok;
+  }, 450);
+});
+$('#fieldUsername').addEventListener('blur', () => validateUsername(true));
+
+$('#step1NextBtn').addEventListener('click', () => {
+  const ok = validateUsername(true);
+  if(!ok) return;
+  state.data.username = $('#fieldUsername').value.trim();
+  const btn = $('#step1NextBtn');
+  setLoading(btn, true);
+  setTimeout(() => {
+    setLoading(btn, false);
+    goToStep(2);
+  }, 450);
+});
+
+/* ============================================================
+   WIZARD STEP 2 — NAME + DOB
+   ============================================================ */
+$('#fieldName').addEventListener('input', () => validateName(false));
+$('#fieldName').addEventListener('blur', () => validateName(true));
+
+function validateName(showState){
+  const input = $('#fieldName');
+  const errEl = $('#fieldNameError');
+  const val = input.value;
+  if(!val.trim()){
+    if(showState) setFieldError(input, errEl, 'Your name is required.');
+    return false;
+  }
+  if(isWhitespaceOnly(val)){
+    if(showState) setFieldError(input, errEl, "Name can't be just spaces.");
+    return false;
+  }
+  if(val.trim().length < 2){
+    if(showState) setFieldError(input, errEl, 'Name must be at least 2 characters.');
+    return false;
+  }
+  if(!/^[a-zA-Z\u00C0-\u024F' -]+$/.test(val.trim())){
+    if(showState) setFieldError(input, errEl, 'Use letters, spaces, or hyphens only.');
+    return false;
+  }
+  setFieldError(input, errEl, '');
+  return true;
+}
+
+$('#fieldDob').addEventListener('change', () => validateDob(true));
+
+function calcAge(dobStr){
+  const dob = new Date(dobStr);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if(m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+function validateDob(showState){
+  const input = $('#fieldDob');
+  const errEl = $('#fieldDobError');
+  const val = input.value;
+  if(!val){
+    if(showState) setFieldError(input, errEl, 'Date of birth is required.');
+    return false;
+  }
+  const dob = new Date(val);
+  const today = new Date();
+  if(dob > today){
+    if(showState) setFieldError(input, errEl, "That date hasn't happened yet.");
+    return false;
+  }
+  const age = calcAge(val);
+  if(age < 18){
+    if(showState) setFieldError(input, errEl, `You must be 18 or older to join Extroverts (you'd be ${age}).`);
+    return false;
+  }
+  if(age > 100){
+    if(showState) setFieldError(input, errEl, 'Please double-check this date of birth.');
+    return false;
+  }
+  setFieldError(input, errEl, '');
+  state.data.age = age;
+  return true;
+}
+
+$('#step2NextBtn').addEventListener('click', () => {
+  const nameOk = validateName(true);
+  const dobOk = validateDob(true);
+  if(!nameOk || !dobOk) return;
+  state.data.name = $('#fieldName').value.trim();
+  state.data.dob = $('#fieldDob').value;
+  const btn = $('#step2NextBtn');
+  setLoading(btn, true);
+  setTimeout(() => {
+    setLoading(btn, false);
+    goToStep(3);
+  }, 450);
+});
+
+/* ============================================================
+   WIZARD STEP 3 — PRONOUNS
+   ============================================================ */
+$all('#pronounChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $all('#pronounChips .chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    const isCustom = chip.dataset.pronoun === 'custom';
+    $('#customPronounWrap').classList.toggle('show', isCustom);
+    if(isCustom){
+      $('#customPronoun').focus();
+      state.data.pronoun = '';
+    } else {
+      state.data.pronoun = chip.dataset.pronoun;
+    }
+    $('#pronounError').classList.remove('show');
+  });
+});
+$('#customPronoun').addEventListener('input', (e) => { state.data.pronoun = e.target.value.trim(); });
+
+$('#step3NextBtn').addEventListener('click', () => {
+  let pronounOk = true;
+  const selectedChip = $('#pronounChips .chip.selected');
+  const customVal = $('#customPronoun').value.trim();
+  if(!selectedChip || (selectedChip.dataset.pronoun === 'custom' && !customVal)){
+    $('#pronounError').textContent = 'Choose an option (or tell us your pronouns).';
+    $('#pronounError').classList.add('show');
+    pronounOk = false;
+  } else {
+    $('#pronounError').classList.remove('show');
+  }
+  if(!pronounOk) return;
+  state.data.pronoun = selectedChip.dataset.pronoun === 'custom' ? customVal : selectedChip.dataset.pronoun;
+  const btn = $('#step3NextBtn');
+  setLoading(btn, true);
+  setTimeout(() => {
+    setLoading(btn, false);
+    goToStep(4);
+  }, 400);
+});
+
+/* ============================================================
+   WIZARD STEP 4 — LOCATION + INTERESTS + BIO
+   ============================================================ */
+(function populateStates(){
+  const sel = $('#fieldState');
+  Object.keys(LOCATIONS).forEach(stateName => {
+    const opt = document.createElement('option');
+    opt.value = stateName; opt.textContent = stateName;
+    sel.appendChild(opt);
+  });
+})();
+
+$('#fieldState').addEventListener('change', (e) => {
+  const citySel = $('#fieldCity');
+  const chosen = e.target.value;
+  citySel.innerHTML = '';
+  setFieldError(e.target, $('#fieldStateError'), '');
+  if(!chosen){
+    citySel.disabled = true;
+    citySel.innerHTML = '<option value="">Select state first</option>';
+    return;
+  }
+  citySel.disabled = false;
+  const placeholder = document.createElement('option');
+  placeholder.value = ''; placeholder.textContent = 'Select city';
+  citySel.appendChild(placeholder);
+  LOCATIONS[chosen].forEach(city => {
+    const opt = document.createElement('option');
+    opt.value = city; opt.textContent = city;
+    citySel.appendChild(opt);
+  });
+  setFieldError(citySel, $('#fieldCityError'), '');
+});
+
+$('#fieldCity').addEventListener('change', (e) => setFieldError(e.target, $('#fieldCityError'), ''));
+
+function haversine(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLon = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function findNearestCity(lat, lon){
+  let best = null, bestDist = Infinity, bestState = null;
+  Object.entries(LOCATIONS).forEach(([stateName, cities]) => {
+    cities.forEach(city => {
+      const coord = CITY_COORDS[city];
+      if(!coord) return;
+      const dist = haversine(lat, lon, coord[0], coord[1]);
+      if(dist < bestDist){ bestDist = dist; best = city; bestState = stateName; }
+    });
+  });
+  return best ? { city: best, stateVal: bestState, distanceKm: Math.round(bestDist) } : null;
+}
+
+$('#useLocationBtn').addEventListener('click', () => {
+  const btn = $('#useLocationBtn');
+  if(!navigator.geolocation){
+    showToast("Your browser doesn't support location access.", 'error');
+    return;
+  }
+  btn.dataset.loading = 'true';
+  btn.querySelector('.spinner').style.display = 'inline-block';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      btn.dataset.loading = 'false';
+      btn.querySelector('.spinner').style.display = 'none';
+      const match = findNearestCity(pos.coords.latitude, pos.coords.longitude);
+      if(!match){
+        showToast("Couldn't match that to a supported city yet.", 'error');
+        return;
+      }
+      $('#fieldState').value = match.stateVal;
+      $('#fieldState').dispatchEvent(new Event('change'));
+      setTimeout(() => {
+        $('#fieldCity').value = match.city;
+        $('#fieldCity').dispatchEvent(new Event('change'));
+      }, 0);
+      showToast(`Set to ${match.city}, ${match.stateVal}`, 'success');
+    },
+    (err) => {
+      btn.dataset.loading = 'false';
+      btn.querySelector('.spinner').style.display = 'none';
+      const msg = err.code === err.PERMISSION_DENIED
+        ? 'Location access was denied — you can still pick manually below.'
+        : "Couldn't get your location — pick manually below.";
+      showToast(msg, 'error');
+    },
+    { timeout: 8000 }
+  );
+});
+
+$all('#interestChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const val = chip.dataset.interest;
+    const idx = state.data.interests.indexOf(val);
+    if(idx > -1){
+      state.data.interests.splice(idx,1);
+      chip.classList.remove('selected');
+    } else {
+      if(state.data.interests.length >= 8){
+        showToast('You can pick up to 8.', 'error');
+        return;
+      }
+      state.data.interests.push(val);
+      chip.classList.add('selected');
+    }
+    $('#interestCounter').textContent = `${state.data.interests.length} of 8 selected`;
+    if(state.data.interests.length >= 3){
+      $('#interestError').classList.remove('show');
+    }
+  });
+});
+
+$('#fieldBio').addEventListener('input', (e) => {
+  const len = e.target.value.length;
+  const counter = $('#bioCounter');
+  counter.textContent = `${len} / 150`;
+  counter.classList.toggle('warn', len >= 140);
+  state.data.bio = e.target.value;
+});
+
+$('#step4SubmitBtn').addEventListener('click', () => {
+  let valid = true;
+  const stateSel = $('#fieldState');
+  const citySel = $('#fieldCity');
+
+  if(!stateSel.value){
+    setFieldError(stateSel, $('#fieldStateError'), 'Select your state.');
+    valid = false;
+  }
+  if(!citySel.value){
+    setFieldError(citySel, $('#fieldCityError'), 'Select your city.');
+    valid = false;
+  }
+  if(state.data.interests.length < 3){
+    $('#interestError').textContent = 'Pick at least 3 so we can tailor invites.';
+    $('#interestError').classList.add('show');
+    valid = false;
+  }
+  if(!valid) return;
+
+  state.data.stateVal = stateSel.value;
+  state.data.city = citySel.value;
+
+  setBanner('wizardBanner', 'wizardBannerText', '');
+  const btn = $('#step4SubmitBtn');
+  setLoading(btn, true);
+  btn.disabled = true;
+
+  setTimeout(() => {
+    const willFail = Math.random() < 0.12;
+    if(willFail){
+      setLoading(btn, false);
+      setBanner('wizardBanner', 'wizardBannerText', "We couldn't create your profile — a network error occurred. Your details are still here, so just try again.");
+      return;
+    }
+    setLoading(btn, false);
+    renderSuccess();
+    navigate('success');
+    clearProgress();
+    fireConfetti();
+  }, 1300);
+});
+
+/* ============================================================
+   WIZARD NAVIGATION
+   ============================================================ */
+function goToStep(n){
+  $all('.wizard-step').forEach(s => s.style.display = 'none');
+  $('#step-' + n).style.display = 'block';
+  state.step = n;
+  $all('#wizardDots i').forEach(i => {
+    const idx = Number(i.dataset.idx);
+    i.classList.toggle('done', idx < n);
+    i.classList.toggle('current', idx === n);
+  });
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  saveProgress('wizard');
+  autofocusActive();
+}
+
+function autofocusActive(){
+  const container = document.querySelector('.view.is-active');
+  if(!container) return;
+  const target = container.querySelector('input:not([type=checkbox]):not(:disabled), select:not(:disabled)');
+  if(target) setTimeout(() => target.focus({ preventScroll:true }), 60);
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key !== 'Enter') return;
+  const tag = e.target.tagName;
+  if(tag !== 'INPUT' || e.target.type === 'checkbox') return;
+  e.preventDefault();
+  if(state.view === 'email') $('#emailNextBtn').click();
+  else if(state.view === 'otp') $('#otpNextBtn').click();
+  else if(state.view === 'wizard'){
+    const map = {1:'#step1NextBtn', 2:'#step2NextBtn', 3:'#step3NextBtn', 4:'#step4SubmitBtn'};
+    const btn = $(map[state.step]);
+    if(btn && !btn.disabled) btn.click();
+  }
+});
+
+function rehydrateWizardFields(){
+  const d = state.data;
+  if(d.username){
+    $('#fieldUsername').value = d.username;
+    const ok = validateUsername(false);
+    $('#step1NextBtn').disabled = !ok;
+  }
+  if(d.name) $('#fieldName').value = d.name;
+  if(d.dob) $('#fieldDob').value = d.dob;
+  if(d.pronoun){
+    const known = $all('#pronounChips .chip').find(c => c.dataset.pronoun === d.pronoun);
+    if(known){
+      known.classList.add('selected');
+    } else {
+      const customChip = $all('#pronounChips .chip').find(c => c.dataset.pronoun === 'custom');
+      if(customChip) customChip.classList.add('selected');
+      $('#customPronounWrap').classList.add('show');
+      $('#customPronoun').value = d.pronoun;
+    }
+  }
+  if(d.stateVal){
+    $('#fieldState').value = d.stateVal;
+    $('#fieldState').dispatchEvent(new Event('change'));
+    setTimeout(() => { if(d.city) $('#fieldCity').value = d.city; }, 0);
+  }
+  if(d.interests && d.interests.length){
+    d.interests.forEach(val => {
+      const chip = $all('#interestChips .chip').find(c => c.dataset.interest === val);
+      if(chip) chip.classList.add('selected');
+    });
+    $('#interestCounter').textContent = `${d.interests.length} of 8 selected`;
+  }
+  if(d.bio){
+    $('#fieldBio').value = d.bio;
+    $('#bioCounter').textContent = `${d.bio.length} / 150`;
+  }
+}
+
+function initResume(){
+  const saved = loadProgress();
+  if(!saved || !saved.data || !saved.data.email) return;
+  if(saved.view === 'success' || saved.view === 'landing' || saved.view === 'terms') return;
+  $('#resumeStripText').innerHTML = `Continue signing up as <strong>${saved.data.email}</strong>?`;
+  $('#resumeStrip').classList.add('show');
+  $('#resumeBtn').addEventListener('click', () => {
+    state.data = Object.assign({}, state.data, saved.data);
+    $('#resumeStrip').classList.remove('show');
+    if(saved.view === 'wizard'){
+      navigate('wizard');
+      rehydrateWizardFields();
+      goToStep(saved.step || 1);
+    } else if(saved.view === 'otp'){
+      $('#otpTargetEmail').textContent = state.data.email;
+      navigate('otp');
+      startOtpTimer();
+    } else if(saved.view === 'email'){
+      $('#signupEmail').value = state.data.email;
+      navigate('email');
+    }
+  }, { once:true });
+  $('#dismissResumeBtn').addEventListener('click', () => {
+    $('#resumeStrip').classList.remove('show');
+    clearProgress();
+  }, { once:true });
+}
+
+function fireConfetti(){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors = ['#FF5A4E','#FFC93C','#6C5CE7','#33D0C8','#E63E6D','#ffffff'];
+  for(let i=0; i<28; i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    const duration = 2.2 + Math.random()*1.4;
+    el.style.animationDuration = duration + 's';
+    el.style.animationDelay = (Math.random()*0.35) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), (duration + 0.6) * 1000);
+  }
+}
+
+$all('[data-wizard-back]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setBanner('wizardBanner', 'wizardBannerText', '');
+    goToStep(Number(btn.dataset.wizardBack));
+  });
+});
+
+function resetWizardToStep(n){
+  state.data = { email: state.data.email, otp: state.data.otp, username:'', name:'', dob:'', age:null, pronoun:'', stateVal:'', city:'', interests:[], bio:'' };
+  $('#fieldUsername').value=''; $('#fieldUsername').classList.remove('valid','error');
+  $('#usernameValid').classList.remove('show');
+  $('#usernameStatus').classList.remove('show','taken','checking');
+  $('#step1NextBtn').disabled = true;
+  $('#fieldName').value=''; $('#fieldDob').value='';
+  $all('#pronounChips .chip').forEach(c=>c.classList.remove('selected'));
+  $('#customPronounWrap').classList.remove('show'); $('#customPronoun').value='';
+  $('#fieldState').value=''; $('#fieldCity').innerHTML='<option value="">Select state first</option>'; $('#fieldCity').disabled=true;
+  $all('#interestChips .chip').forEach(c=>c.classList.remove('selected'));
+  $('#interestCounter').textContent='0 of 8 selected';
+  $('#fieldBio').value=''; $('#bioCounter').textContent='0 / 150';
+  setBanner('wizardBanner','wizardBannerText','');
+  goToStep(n);
+}
+
+/* ============================================================
+   SUCCESS — recreate the app's profile screen with entered data
+   ============================================================ */
+function renderSuccess(){
+  const initial = (state.data.name.trim().charAt(0) || '?').toUpperCase();
+  $('#successAvatar').textContent = initial;
+  $('#successNameAge').innerHTML = `${state.data.name} <span>${state.data.age}</span>`;
+  $('#successHandle').textContent = `@${state.data.username} · ${state.data.pronoun}`;
+  $('#successLocation').textContent = `${state.data.city}, ${state.data.stateVal}`;
+  $('#successInterests').innerHTML = state.data.interests.map(i => `<span class="chip selected" style="cursor:default;">${i}</span>`).join('');
+}
+
+$('#startOverBtn').addEventListener('click', () => {
+  state.data.email=''; state.data.otp='';
+  clearProgress();
+  navigate('terms');
+  $('#termsCheckbox').checked = false;
+  $('#termsContinueBtn').disabled = true;
+  $('#signupEmail').value=''; $('#signupEmail').classList.remove('valid','error');
+});
+
+initResume();
+autofocusActive();
+</script>
+</body>
+</html>
